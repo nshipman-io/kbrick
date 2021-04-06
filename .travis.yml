@@ -1,0 +1,29 @@
+language: python
+python:
+  - "3.9"
+
+stages:
+  - Testing
+  - Publish
+
+install:
+  - poetry install
+
+jobs:
+  include:
+    - stage: Testing
+      name: tests
+      script: python -m unittest -b
+    - stage: Publish
+      script: skip
+      before_deploy:
+            - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+            - source $HOME/.poetry/env
+            - poetry install
+            - poetry config repositories.testpypi https://test.pypi.org/simple/
+            - poetry config http-basic.pypi $TEST_PYPI_USERNAME $TEST_PYPI_PASSWORD
+      deploy:
+        provider: script
+        script: poetry publish --build
+script:
+  python -m unittest
